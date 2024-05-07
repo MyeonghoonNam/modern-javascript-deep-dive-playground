@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://velog.velcdn.com/images/codenmh0822/post/313983d9-5468-41bd-9240-f8003031e05e/image.png" width="50%" height="50%" />
+</p>
+
 약 2년전에 첫 1회 정독했던 서적 모던 자바스크립트 Deep Dive.
 
 서적의 내용이 자바스크립트 기본기를 다루고, 나 역시 1회 정독으로는 보다 완벽한 이해도를 위해 부족하다고 판단하여 디지털 메모를 진행하기로 결정하게 되었다.
