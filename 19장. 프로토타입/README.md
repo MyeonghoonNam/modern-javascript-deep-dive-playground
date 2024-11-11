@@ -313,3 +313,163 @@ console.log(obj); // String {"123"}
 따라서 프로토타입의 `constructor` 프로퍼티를 통해 연결되어 있는 생성자 함수를 리터럴 표기법으로 생성한 객체의 생성자 함수로 생각해도 큰 무리는 없다.
 
 ![](https://velog.velcdn.com/images/codenmh0822/post/6c270015-2497-4eba-8e79-5ebbcbcb515d/image.png)
+
+## 프로토타입의 생성 시점
+
+객체는 리터럴 표기법 또는 생성자 함수에 의해 생성되므로 결국 **모든 객체는 생성자 함수와 연결되어 있다.**
+
+**프로토타입은 생성자 함수가 생성되는 시점에 더불어 생성된다.** 프로토타입과 생성자 함수는 언제나 쌍으로 존재하기 때문이다.
+
+생성자 함수는 사용자가 직접 정의한 사용자 정의 생성자 함수와 자바스크립트가 기본 제공하는 빌트인 생성자 함수로 구분할 수 있다.
+
+### 사용자 정의 생성자 함수와 프로토타입 생성 시점
+
+내부 메서드 `[[Construct]]`를 갖는 함수 객체, 즉 화살표 함수나 ES6의 메서드 축약 표현으로 정의하지 않고 일반 함수(함수 선언문, 함수 표현식)로 정의한 함수 객체는 `new` 연산자와 함께 생성자 함수로 호출할 수 있다.
+
+**생성자 함수로서 호출할 수 있는 함수, 즉 `constructor`는 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다.**
+
+```js
+console.log(Person.prototype);
+console.log(Person2.prototype); // ReferenceError: Cannot access 'Person2' before initialization
+
+// 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 생성
+function Person(name) {
+  this.name = name;
+}
+
+// 화살표 함수는 non-constructor라서 프로토타입이 생성되지 않는다.
+const Person2 = (name) => {
+  this.name = name;
+};
+```
+
+생성된 프로토타입도 객체이다. 모든 객체는 프로토타입을 가지므로 생성된 프로토타입도 자신의 프로토타입을 갖는다.
+
+이 때 생성된 프로토타입(`Person.prototype`)의 프로토타입은 `Object.prototype`이다.
+
+![](https://velog.velcdn.com/images/codenmh0822/post/ea49d863-2efb-4dd9-9de1-6428c0933d00/image.png)
+
+### 빌트인 생성자 함수와 프로토타입 생성 시점
+
+`Object`, `String`, `Number`, `Function`, `Array`, `RegExp`, `Date`, `Promise`등과 같은 빌트인 생성자 함수도 **일반 함수와 마찬가지로 빌트인 생성자 함수가 생성되는 시점에 프로토타입이 생성된다.**
+
+모든 빌트인 생성자 함수는 전역 객체가 생성되는 시점에 생성된다. 생성된 프로토타입은 빌트인 생성자 함수의 `prototype` 프로퍼티에 바인딩된다.
+
+> **전역 객체**
+> 코드가 실행되기 이전 단계에 자바스크립트 엔진에 의해 생성되는 특수한 객체다. 클라이언트 사이드 환경에서는 **window**, 서버 사이드 환경에서는 **global** 객체를 의미한다.
+
+![](https://velog.velcdn.com/images/codenmh0822/post/2b49da8e-2151-49be-9cf0-48a643dc67d2/image.png)
+
+이처럼 객체가 생성되기 이전에 생성자 함수와 프로토타입은 이미 객체화되어 존재한다.
+
+이후 생성자 함수 또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 `[[Prototype]]` 내부 슬롯에 할당된다. 이로써 생성된 객체는 프로토타입을 상속받는다.
+
+## 객체 생성 방식과 프로토타입의 결정
+
+**프로토타입은 자바스크립트 엔진이 객체를 생성할 때, 추상 연산 `OrdinaryObjectCreate`에 전달되는 인수에 의해 결정된다.** 이 인수는 **객체가 생성되는 시점에 객체 생성 방식**에 의해 결정된다.
+
+#### 객체 리터럴에 의해 생성된 객체의 프로토타입
+
+객체 리터럴에 의해 생성되는 객체의 프로토타입은 `Object.prototype`이다.
+
+```js
+const obj = { x: 1 };
+```
+
+위 객체 리터럴이 평가되면 추상 연산 `OrdinaryObjectCreate`에 의해 다음과 같이 `Object` 생성자 함수와 `Object.prototype`과 생성된 객체 사이에 연결이 만들어진다.
+
+![](https://velog.velcdn.com/images/codenmh0822/post/feaa7f81-026a-406d-bcc7-84f39f38a7e5/image.png)
+
+이로써 `Oject.prototype`을 상속받고, 상속 받음으로 인해 obj 객체는 `constructor` 프로퍼티와 `hasOwnProperty` 메서드를 자신의 자산인 것처럼 자유롭게 사용할 수 있다.
+
+#### Object 생성자 함수에 의해 생성된 객체의 프로토타입
+
+`Object` 생성자 함수를 인수 없이 호출하면 빈 객체가 생성된다. `Object` 생성자 함수에 의해 생성되는 객체의 프로토타입은 `Object.prototype`이다.
+
+```js
+const obj = new Object();
+obj.x = 1;
+```
+
+![](https://velog.velcdn.com/images/codenmh0822/post/108faac4-91bf-492f-ada9-a44d9c90880b/image.png)
+
+`Object` 생성자 함수에 의해 생성된 `obj`객체는 `Object.prototype`을 프로토타입으로 갖게되며, 이로써 `Object.prototype`을 상속받는다.
+
+`객체 리터럴`과 `Object 생성자 함수`에 의한 객체 생성 방식의 차이는 **프로퍼티를 추가하는 방식**에 있다.
+
+- 객체 리터럴 방식 : 객체 리터럴 내부에 프로퍼티 추가
+- Object 생성자 함수 방식 : 일반 빈 객체를 생성한 이후 프로퍼티 추가
+
+#### 생성자 함수에 의해 생성된 객체의 프로토타입
+
+생성자 함수에 의해 생성되는 객체의 프로토타입은 **생성자 함수의 `prototype` 프로퍼티에 바인딩되어 있는 객체다.**
+
+```js
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person("Lee");
+```
+
+생성자 함수와 생성자 함수의 `prototype` 프로퍼티에 바인딩되어있는 객체(`Person.prototype`)와 생성된 객체사이에 연결이 만들어진다.
+
+![](https://velog.velcdn.com/images/codenmh0822/post/d8ca0049-707a-48e4-9569-14e607181938/image.png)
+
+사용자 정의 생성자 함수(Person)와 더불어 생성된 프로토타입 `Person.prototype`의 프로퍼티는 `constructor`뿐이다.
+
+## 프로토타입 체인
+
+```js
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My name is ${this.name}`);
+};
+
+const me = new Person("Lee");
+
+// hasOwnProperty는 Object.prototype의 메서드다.
+console.log(me.hasOwnProperty("name")); // true
+
+console.log(Object.getPrototypeOf(me) === Person.prototype); // true
+console.log(Object.getPrototypeOf(Person.prototype) === Object.prototype); // true
+```
+
+`Person` 생성자 함수에 의해 생성된 `me` 객체는 `Object.prototype`의 메서드인 `hasOwnProperty`를 호출할 수 있다. 이것은 `me` 객체가 `Person.prototype`뿐만 아니라 `Object.prototype`도 상속받았다는것을 의미한다.
+
+`Person.prototype`의 프로토타입은 `Object.prototype`이다.
+
+**프로토타입의 프로토타입은 언제나 `Object.prototype`이다.**
+
+![](https://velog.velcdn.com/images/codenmh0822/post/1e094157-fea1-4895-99fd-47a7d1c786ce/image.png)
+
+**자바스크립트는 객체의 프로퍼티에 접근하려고 할 때 해당 객체에 접근하여는 프로퍼티가 없다면 `[[Prototype]]` 내부 슬롯의 참조를 따라 자신의 부모 역할을 하는 프로토타입의 프로퍼티를 순차적으로 검색하는 것을 프로토타입 체인이라한다.**
+
+프로토타입 체인의 최상위에 위치하는 객체는 언제나 `Object.prototype`이다. **`Object.prototype`을 프로토타입 체인의 종점이라한다.**
+
+프로토타입 체인의 종점의 `[[Prototype]]` 내부 슬롯의 값은 `null`이다. 프로토타입 체인의 종점까지 프로퍼티를 검색할 수 없는 경우 `undefined`를 반환하며, 이 때 에러가 발생하지 않는다.
+
+프로토타입 체인은 자바스크립트가 **객체지향 프로그래밍의 상속을 구현하는 메커니즘이다.**
+
+프로퍼티가 아닌 식별자는 스코프 체인에서 검색한다.
+
+- **스코프 체인** : **식별자 검색을 위한 메커니즘**
+- **프로토타입 체인** : **자바스크립트가 객체지향 프로그래밍의 상속을 구현하는 매커니즘**
+
+```js
+me.hasOwnProrerty("name");
+```
+
+위의 경우 아래와 같이 스코프, 프로토타입 체인은 협력한다.
+
+1. 스코프체인에서 me 식별자를 검색한다.
+2. me 식별자는 전역에 선언되었으므로 전역 스코프에서 검색된다.
+3. me 식별자를 검색한 후, me 객체의 프로토타입 체인에서 hasOwnProrerty 메서드를 검색한다.
+
+이처럼 **스코프 체인과 프로토타입 체인은 서로 연관없이 별도로 동작하는 것이 아니라 서로 협력하여 식별자와 프로퍼티를 검색하는데 사용된다.**
+
+## 오버라이딩과 프로퍼티 섀도잉
