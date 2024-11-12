@@ -90,7 +90,7 @@ var obj = {
 ```js
 var person = {
   firstName: "firstName"; // 식별자 네이밍 규칙을 따르는 프로퍼티
-  "last-name": "lastName; // 식별자 네이밍 규칙을 따르지 않는 프로퍼티
+  "last-name": lastName; // 식별자 네이밍 규칙을 따르지 않는 프로퍼티
 }
 ```
 
