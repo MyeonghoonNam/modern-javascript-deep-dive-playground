@@ -196,3 +196,85 @@ const circle2 = new Circle(10);
 console.log(circle1.getDiameter()); // 10
 console.log(circle2.getDiameter()); // 20
 ```
+
+### Function.prototype.apply/call/bind 메서드에 의한 간접 호출
+
+`apply`, `call`, `bind` 메서드는 `Function.prototype`의 메서드이다. 즉, 이들 메서드는 모든 함수가 상속받아 사용할 수 있다.
+
+![](https://velog.velcdn.com/images/codenmh0822/post/2fcaec86-f00a-4d60-93f2-aba09d00a361/image.png)
+
+#### apply와 call 메서드
+
+`apply`와 `call` 메서드의 본질적인 기능은 함수를 호출하는 것이다.
+
+`apply`와 `call` 메서드는 함수를 호출하면 첫 번째 인수로 전달한 특정 객체를 호출한 함수의 `this`에 바인딩된다.
+
+`apply`메서드는 호출할 함수의 인수를 **배열**로 묶어 전달한다.
+
+`call`메서드는 호출할 함수의 인수를 **쉼표로 구분한 리스트 형식**으로 전달한다.
+
+`apply`와 `call` 메서드는 호출할 함수에 인수를 전달하는 방식만 다를 뿐 `this`로 사용할 객체를 전달하면서 함수를 호출하는 것은 동일하다.
+
+```js
+function getThisBinding() {
+  console.log(arguments);
+  return this;
+}
+
+// this로 사용할 객체
+const thisArg = { a: 1 };
+
+console.log(getThisBinding()); // window
+
+// getThisBinding 함수를 호출하면서 인수로 전달한 객체를 getThisBinding 함수의 this에 바인딩한다.
+console.log(getThisBinding.apply(thisArg)); // { a: 1 }
+console.log(getThisBinding.call(thisArg)); // { a: 1 }
+
+// getThisBinding 함수를 호출하면서 인수로 전달한 객체를 getThisBinding 함수의 this에 바인딩한다.
+// apply 메서드는 호출할 함수의 인수를 배열로 묶어 전달한다.
+console.log(getThisBinding.apply(thisArg, [1, 2, 3]));
+// Arguments(3) [1, 2, 3, callee: ƒ, Symbol(Symbol.iterator): ƒ]
+// {a: 1}
+
+// call 메서드는 호출할 함수의 인수를 쉼표로 구분한 리스트 형식으로 전달한다.
+console.log(getThisBinding.call(thisArg, 1, 2, 3));
+// Arguments(3) [1, 2, 3, callee: ƒ, Symbol(Symbol.iterator): ƒ]
+```
+
+#### bind 메서드
+
+`bind` 메서드는 `apply`와 `call` 메서드와 달리 함수를 호출하지 않는다. 다만 첫 번째 인수로 전달한 값으로 `this` 바인딩이 교체된 함수를 새롭게 생성해 반환한다.
+
+```js
+function getThisBinding() {
+  return this;
+}
+
+// this로 사용할 객체
+const thisArg = { a: 1 };
+
+// bind 메서드는 첫 번째 인수로 전달한 thisArg로 this 바인딩이 교체된다.
+// getThisBinding 함수를 새롭게 생성해 반환한다.
+console.log(getThisBinding.bind(thisArg)); // getThisBinding
+// bind 메서드는 함수를 호출하지는 않으므로 명시적으로 호출해야 한다.
+console.log(getThisBinding.bind(thisArg)()); // {a: 1}
+```
+
+`bind` 메서드는 메서드의 `this`와 메서드 내부의 중첩 함수 또는 콜백 함수의 `this`가 불일치하는 문제를 해결하기 위해 유용하게 사용된다.
+
+콜백 함수 내부의 `this`를 외부 함수 내부의 `this`와 일치시켜야 한다. 이때 `bind` 메서드를 사용하여 `this`를 일치시킬 수 있다.
+
+```js
+const persen = {
+  name: "Lee",
+  foo(callback) {
+    setTimeout(callback.bind(this), 100);
+  },
+};
+
+persen.foo(function () {
+  console.log(`Hi! my name is ${this.name}.`);
+});
+```
+
+![](https://velog.velcdn.com/images/codenmh0822/post/87b2c993-0ad2-4ea7-9094-de2e682d57f4/image.png)
