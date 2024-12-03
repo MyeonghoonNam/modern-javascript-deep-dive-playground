@@ -265,14 +265,14 @@ console.log(getThisBinding.bind(thisArg)()); // {a: 1}
 콜백 함수 내부의 `this`를 외부 함수 내부의 `this`와 일치시켜야 한다. 이때 `bind` 메서드를 사용하여 `this`를 일치시킬 수 있다.
 
 ```js
-const persen = {
+const person = {
   name: "Lee",
   foo(callback) {
     setTimeout(callback.bind(this), 100);
   },
 };
 
-persen.foo(function () {
+person.foo(function () {
   console.log(`Hi! my name is ${this.name}.`);
 });
 ```
